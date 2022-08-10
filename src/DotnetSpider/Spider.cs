@@ -351,7 +351,7 @@ namespace DotnetSpider
 				await _services.Scheduler.FailAsync(request);
 				// if download correct content, parser or storage failed by network or something else
 				// retry it until trigger retryTimes limitation
-				await AddRequestsAsync(request);
+				await AddRequestsAsync(request.Clone());
 				Logger.LogError($"{SpiderId} handle {System.Text.Json.JsonSerializer.Serialize(request)} failed: {e}");
 			}
 			finally
