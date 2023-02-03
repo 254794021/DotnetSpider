@@ -58,13 +58,13 @@ namespace DotnetSpider.Scheduler
 			}
 			else
 			{
-				start = _requests.Count - dequeueCount - 1;
+				start = _requests.Count - dequeueCount;
 			}
 
 			var requests = new List<Request>();
-			for (var i = _requests.Count - 1; i >= start; --i)
+			for (var i = _requests.Count; i > start; --i)
 			{
-				requests.Add(_requests[i]);
+				requests.Add(_requests[i - 1]);
 			}
 
 			if (dequeueCount > 0)
