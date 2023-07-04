@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 #if NETSTANDARD2_0
 using System.Threading;
 #endif
@@ -13,12 +14,12 @@ namespace DotnetSpider.Infrastructure
 	{
 		private readonly ConcurrentDictionary<string, Request> _dict;
 		private readonly HashedWheelTimer _timer;
-		private ConcurrentBag<Request> _queue;
+		private ConcurrentQueue<Request> _queue;
 
 		public RequestedQueue()
 		{
 			_dict = new ConcurrentDictionary<string, Request>();
-			_queue = new ConcurrentBag<Request>();
+			_queue = new ConcurrentQueue<Request>();
 			_timer = new HashedWheelTimer(TimeSpan.FromSeconds(1)
 				, 100000);
 		}
@@ -50,20 +51,23 @@ namespace DotnetSpider.Infrastructure
 
 		public Request[] GetAllTimeoutList()
 		{
+			List<Request> requests= new List<Request>();
 			var data = _queue.ToArray();
-#if NETSTANDARD2_0
-			Interlocked.Exchange(ref _queue, new ConcurrentBag<Request>());
-#else
-			_queue.Clear();
-#endif
-			return data;
+			for (int i = 0; i < data.Length; i++)
+			{
+				if (_queue.TryDequeue(out var request))
+				{
+					requests.Add(request);
+				}
+			}
+			return requests.ToArray();
 		}
 
 		private void Timeout(string hash)
 		{
 			if (_dict.TryRemove(hash, out var request))
 			{
-				_queue.Add(request);
+				_queue.Enqueue(request);
 			}
 		}
 
@@ -89,7 +93,7 @@ namespace DotnetSpider.Infrastructure
 		{
 			_dict.Clear();
 #if NETSTANDARD2_0
-			Interlocked.Exchange(ref _queue, new ConcurrentBag<Request>());
+			Interlocked.Exchange(ref _queue, new ConcurrentQueue<Request>());
 #else
 			_queue.Clear();
 #endif

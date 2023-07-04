@@ -126,6 +126,11 @@ namespace DotnetSpider.Proxy
 			}
 		}
 
+		public int GetCount()
+		{
+			return _dict.Count;
+		}
+
 		private class ReturnProxyTask : ITimerTask
 		{
 			private readonly Uri _proxy;

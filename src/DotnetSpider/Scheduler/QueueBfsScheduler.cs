@@ -53,7 +53,7 @@ namespace DotnetSpider.Scheduler
 			var requests = _requests.Take(count).ToArray();
 			if (requests.Length > 0)
 			{
-				_requests.RemoveRange(0, count);
+				_requests.RemoveRange(0, requests.Length);
 			}
 
 			return Task.FromResult(requests.Select(x => x.Clone()));

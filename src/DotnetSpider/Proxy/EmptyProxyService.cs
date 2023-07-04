@@ -26,5 +26,10 @@ namespace DotnetSpider.Proxy
 		{
 			throw new NotImplementedException();
 		}
+
+		public int GetCount()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

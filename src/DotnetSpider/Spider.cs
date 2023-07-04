@@ -298,10 +298,10 @@ namespace DotnetSpider
 									Logger.LogError(
 										$"{SpiderId} download {request.RequestUri}, {request.Hash} status code: {response.StatusCode} failed: {response.ReasonPhrase}");
 
+									OnRequestError?.Invoke(request, response);
+
 									// 每次调用添加会导致 Requested + 1, 因此失败多次的请求最终会被过滤不再加到调度队列
 									await AddRequestsAsync(request);
-
-									OnRequestError?.Invoke(request, response);
 								}
 							}
 
@@ -479,9 +479,9 @@ namespace DotnetSpider
 					$"{SpiderId} request {request.RequestUri}, {request.Hash} timeout");
 			}
 
-			await AddRequestsAsync(timeoutRequests);
-
 			OnRequestTimeout?.Invoke(timeoutRequests);
+
+			await AddRequestsAsync(timeoutRequests);
 
 			return true;
 		}

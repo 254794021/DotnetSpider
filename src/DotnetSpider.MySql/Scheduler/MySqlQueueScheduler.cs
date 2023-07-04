@@ -81,10 +81,10 @@ CREATE TABLE IF NOT EXISTS `{spiderId}_queue`
 				throw new ArgumentException($"{nameof(count)} should be large than 0");
 			}
 
+			await using var conn = new MySqlConnection(_options.ConnectionString);
 			MySqlTransaction transaction = null;
 			try
 			{
-				await using var conn = new MySqlConnection(_options.ConnectionString);
 				if (conn.State != ConnectionState.Open)
 				{
 					await conn.OpenAsync();
@@ -131,43 +131,45 @@ CREATE TABLE IF NOT EXISTS `{spiderId}_queue`
 		public async Task<int> EnqueueAsync(IEnumerable<Request> requests)
 		{
 			MySqlTransaction transaction = null;
-			try
+
+			await using var conn = new MySqlConnection(_options.ConnectionString);
+			if (conn.State != ConnectionState.Open)
 			{
-				await using var conn = new MySqlConnection(_options.ConnectionString);
-				if (conn.State != ConnectionState.Open)
+				await conn.OpenAsync();
+			}
+
+			var total = 0;
+			foreach (var request in requests)
+			{
+				_requestHasher.ComputeHash(request);
+
+				var data = new { request.Hash, Request = request.Serialize() };
+
+				try
 				{
-					await conn.OpenAsync();
-				}
+					transaction = await conn.BeginTransactionAsync();
 
-				transaction = await conn.BeginTransactionAsync();
-
-				var total = 0;
-				foreach (var request in requests)
-				{
-					_requestHasher.ComputeHash(request);
-
-					var data = new {request.Hash, Request = request.Serialize()};
 					var cnt = await conn.ExecuteAsync(_insertSetSql, data, transaction);
 					if (cnt > 0)
 					{
 						await conn.ExecuteAsync(_insertQueueSql, data, transaction);
 						total += 1;
 					}
+
+					await transaction.CommitAsync();
 				}
-
-				await transaction.CommitAsync();
-
-				return total;
-			}
-			catch
-			{
-				if (transaction != null)
+				catch
 				{
-					await transaction.RollbackAsync();
-				}
+					if (transaction != null)
+					{
+						await transaction.RollbackAsync();
+					}
 
-				throw;
+					throw;
+				}
 			}
+
+			return total;
 		}
 
 		/// <summary>
@@ -201,14 +203,31 @@ CREATE TABLE IF NOT EXISTS `{spiderId}_queue`
 
 		public async Task SuccessAsync(Request request)
 		{
+#if NETSTANDARD2_0
 			await using var conn = new MySqlConnection(_options.ConnectionString);
-			await conn.ExecuteAsync(_successSql, new {request.Hash});
+			await conn.ExecuteAsync(_successSql, new { request.Hash });
+#else
+			var conn = new MySqlConnection(_options.ConnectionString);
+			await using (conn.ConfigureAwait(false))
+			{
+				await conn.ExecuteAsync(_successSql, new { request.Hash }).ConfigureAwait(false);
+			}
+#endif
 		}
 
 		public async Task FailAsync(Request request)
 		{
+#if NETSTANDARD2_0
 			await using var conn = new MySqlConnection(_options.ConnectionString);
-			await conn.ExecuteAsync(_failSql, new {request.Hash});
+			await conn.ExecuteAsync(_failSql, new { request.Hash });
+#else
+			var conn = new MySqlConnection(_options.ConnectionString);
+			await using (conn.ConfigureAwait(false))
+			{
+				await conn.ExecuteAsync(_failSql, new { request.Hash }).ConfigureAwait(false);
+			}
+#endif
+
 		}
 
 		public void Dispose()
