@@ -70,7 +70,7 @@ namespace DotnetSpider.Proxy
 
 				// 若是失败次数为 reDetectCount 的倍数则尝试重新测试此代理是否正常，若是测试不成功，则把此代理从缓存中删除，不再使用
 				if ((p.FailedNum != 0 && p.FailedNum % _reDetectCount == 0) &&
-				    !await _proxyValidator.IsAvailable(p.Uri))
+					!await _proxyValidator.IsAvailable(p.Uri))
 				{
 					_dict.TryRemove(p.Uri, out _);
 					return;
@@ -124,11 +124,6 @@ namespace DotnetSpider.Proxy
 			{
 				return null;
 			}
-		}
-
-		public int GetCount()
-		{
-			return _dict.Count;
 		}
 
 		private class ReturnProxyTask : ITimerTask

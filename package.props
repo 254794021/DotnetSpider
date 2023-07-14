@@ -4,9 +4,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <Version>5.1.6</Version>
-    <FileVersion>5.1.6.0</FileVersion>
-    <AssemblyVersion>5.1.6.0</AssemblyVersion>
+    <Version>5.1.8</Version>
+    <FileVersion>5.1.8.0</FileVersion>
+    <AssemblyVersion>5.1.8.0</AssemblyVersion>
     <Authors>254794021@qq.com;</Authors>
     <Copyright>Copyright 2018 Lewis Zou</Copyright>
     <Description>DotnetSpider, a .NET Standard web crawling library. It is lightweight, efficient and fast high-level web crawling &amp; scraping framework</Description>

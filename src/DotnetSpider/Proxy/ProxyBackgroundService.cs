@@ -46,17 +46,7 @@ namespace DotnetSpider.Proxy
 							_logger.LogInformation($"Find new {cnt} proxies");
 						}
 
-						if (interval > 0)
-						{
-							await Task.Delay(interval, default);
-						}
-						else
-						{
-							while(_pool.GetCount() > Math.Abs(_options.RefreshProxy))
-							{
-								await Task.Delay(200, default);
-							}
-						}
+						await Task.Delay(interval, default);
 					}
 					catch (Exception e)
 					{

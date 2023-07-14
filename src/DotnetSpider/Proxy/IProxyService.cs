@@ -11,6 +11,5 @@ namespace DotnetSpider.Proxy
 		Uri Get();
 		Task ReturnAsync(Uri proxy, HttpStatusCode statusCode);
 		Task<int> AddAsync(IEnumerable<Uri> proxies);
-		int GetCount();
 	}
 }
